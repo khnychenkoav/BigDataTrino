@@ -1,0 +1,75 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: bd_trino_postgres
+    environment:
+      POSTGRES_DB: trino_lab
+      POSTGRES_USER: lab
+      POSTGRES_PASSWORD: lab
+      TZ: Europe/Moscow
+    ports:
+      - "5435:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - "./исходные данные:/data:ro"
+      - "./sql/postgres:/docker-entrypoint-initdb.d:ro"
+    healthcheck:
+      test: ["CMD-SHELL", "psql -U lab -d trino_lab -tAc \"select count(*) = 5000 from stage.mock_data_raw\" | grep -q t"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8-alpine
+    container_name: bd_trino_clickhouse
+    environment:
+      CLICKHOUSE_DB: reports
+      CLICKHOUSE_USER: lab
+      CLICKHOUSE_PASSWORD: lab
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+    ports:
+      - "8125:8123"
+      - "9002:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - "./sql:/sql:ro"
+    healthcheck:
+      test: ["CMD-SHELL", "clickhouse-client --user lab --password lab --query 'SELECT 1' >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  trino:
+    image: trinodb/trino:460
+    container_name: bd_trino_engine
+    ports:
+      - "8082:8080"
+    volumes:
+      - "./trino/catalog:/etc/trino/catalog:ro"
+      - "./sql/trino:/sql/trino:ro"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "trino --server http://localhost:8080 --execute 'SELECT 1' >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+
+  clickhouse-loader:
+    image: clickhouse/clickhouse-server:24.8-alpine
+    container_name: bd_trino_clickhouse_loader
+    entrypoint: ["/bin/sh", "/scripts/load_clickhouse_stage.sh"]
+    volumes:
+      - "./исходные данные:/data:ro"
+      - "./sql:/sql:ro"
+      - "./scripts:/scripts:ro"
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  clickhouse_data:
