@@ -59,28 +59,6 @@ SELECT
 FROM clickhouse.reports.stage_unified_sales
 GROUP BY pet_key;
 
-INSERT INTO clickhouse.reports.dim_date
-WITH all_dates AS (
-    SELECT sale_date AS full_date FROM clickhouse.reports.stage_unified_sales
-    UNION ALL
-    SELECT product_release_date AS full_date FROM clickhouse.reports.stage_unified_sales
-    UNION ALL
-    SELECT product_expiry_date AS full_date FROM clickhouse.reports.stage_unified_sales
-)
-SELECT
-    year(full_date) * 10000 + month(full_date) * 100 + day_of_month(full_date),
-    full_date,
-    year(full_date),
-    quarter(full_date),
-    month(full_date),
-    day_of_month(full_date),
-    day_of_week(full_date)
-FROM (
-    SELECT DISTINCT full_date
-    FROM all_dates
-    WHERE full_date IS NOT NULL
-);
-
 INSERT INTO clickhouse.reports.dim_product
 SELECT
     product_key,
@@ -95,8 +73,8 @@ SELECT
     min(product_description),
     min(product_rating),
     min(product_reviews),
-    min(year(product_release_date) * 10000 + month(product_release_date) * 100 + day_of_month(product_release_date)),
-    min(year(product_expiry_date) * 10000 + month(product_expiry_date) * 100 + day_of_month(product_expiry_date))
+    min(product_release_date),
+    min(product_expiry_date)
 FROM clickhouse.reports.stage_unified_sales
 GROUP BY product_key;
 
@@ -112,7 +90,7 @@ SELECT
     pet_key,
     store_key,
     supplier_key,
-    year(sale_date) * 10000 + month(sale_date) * 100 + day_of_month(sale_date),
+    sale_date,
     sale_quantity,
     sale_total_price,
     calculated_total_amount,

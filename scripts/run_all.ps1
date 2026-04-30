@@ -6,7 +6,7 @@ function Invoke-Checked {
     }
 }
 
-docker compose up -d postgres clickhouse trino
+Invoke-Checked { docker compose up -d postgres clickhouse trino }
 
 $containers = @(
     "bd_trino_postgres",

@@ -1,4 +1,6 @@
-SELECT *
+SELECT
+    object_name,
+    rows_count
 FROM (
     SELECT 'stage_clickhouse_raw' AS object_name, count() AS rows_count FROM reports.stage_mock_data_raw
     UNION ALL SELECT 'stage_unified_sales', count() FROM reports.stage_unified_sales
@@ -8,7 +10,6 @@ FROM (
     UNION ALL SELECT 'dim_supplier', count() FROM reports.dim_supplier
     UNION ALL SELECT 'dim_product', count() FROM reports.dim_product
     UNION ALL SELECT 'dim_pet', count() FROM reports.dim_pet
-    UNION ALL SELECT 'dim_date', count() FROM reports.dim_date
     UNION ALL SELECT 'fact_sales', count() FROM reports.fact_sales
     UNION ALL SELECT 'report_sales_by_product', count() FROM reports.report_sales_by_product
     UNION ALL SELECT 'report_sales_by_customer', count() FROM reports.report_sales_by_customer

@@ -7,7 +7,6 @@ DROP TABLE IF EXISTS reports.report_sales_by_time;
 DROP TABLE IF EXISTS reports.report_sales_by_customer;
 DROP TABLE IF EXISTS reports.report_sales_by_product;
 DROP TABLE IF EXISTS reports.fact_sales;
-DROP TABLE IF EXISTS reports.dim_date;
 DROP TABLE IF EXISTS reports.dim_pet;
 DROP TABLE IF EXISTS reports.dim_product;
 DROP TABLE IF EXISTS reports.dim_supplier;
@@ -197,8 +196,8 @@ CREATE TABLE reports.dim_product (
     product_description String,
     product_rating Float64,
     product_reviews Int32,
-    release_date_key Int32,
-    expiry_date_key Int32
+    product_release_date Date,
+    product_expiry_date Date
 ) ENGINE = MergeTree
 ORDER BY product_key;
 
@@ -211,17 +210,6 @@ CREATE TABLE reports.dim_pet (
 ) ENGINE = MergeTree
 ORDER BY pet_key;
 
-CREATE TABLE reports.dim_date (
-    date_key Int32,
-    full_date Date,
-    year Int32,
-    quarter Int32,
-    month Int32,
-    day_of_month Int32,
-    day_of_week Int32
-) ENGINE = MergeTree
-ORDER BY date_key;
-
 CREATE TABLE reports.fact_sales (
     sale_event_key String,
     source_system String,
@@ -233,7 +221,7 @@ CREATE TABLE reports.fact_sales (
     pet_key String,
     store_key String,
     supplier_key String,
-    sale_date_key Int32,
+    sale_date Date,
     sale_quantity Int32,
     sale_total_price Decimal(14, 2),
     calculated_total_amount Decimal(14, 2),

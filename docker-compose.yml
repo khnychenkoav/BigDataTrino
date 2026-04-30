@@ -6,7 +6,6 @@ services:
       POSTGRES_DB: trino_lab
       POSTGRES_USER: lab
       POSTGRES_PASSWORD: lab
-      TZ: Europe/Moscow
     ports:
       - "5435:5432"
     volumes:

@@ -84,17 +84,16 @@ FROM ranked;
 INSERT INTO clickhouse.reports.report_sales_by_time
 WITH base AS (
     SELECT
-        year(d.full_date) AS sales_year,
-        month(d.full_date) AS sales_month,
-        date_trunc('month', d.full_date) AS period_start,
+        year(f.sale_date) AS sales_year,
+        month(f.sale_date) AS sales_month,
+        date_trunc('month', f.sale_date) AS period_start,
         count(*) AS sales_count,
         sum(f.sale_quantity) AS total_units_sold,
         sum(f.sale_total_price) AS source_revenue,
         sum(f.calculated_total_amount) AS calculated_revenue,
         avg(CAST(f.sale_total_price AS double)) AS avg_order_amount
     FROM clickhouse.reports.fact_sales f
-    JOIN clickhouse.reports.dim_date d ON f.sale_date_key = d.date_key
-    GROUP BY year(d.full_date), month(d.full_date), date_trunc('month', d.full_date)
+    GROUP BY year(f.sale_date), month(f.sale_date), date_trunc('month', f.sale_date)
 ),
 ranked AS (
     SELECT
